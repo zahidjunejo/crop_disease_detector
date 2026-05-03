@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crop Disease Detector</title>
+  <style>
+    :root {
+      --bg: #111317;
+      --bg-soft: #171a1f;
+      --card: #1d2128;
+      --card-2: #222730;
+      --primary: #a3abb8;
+      --primary-dark: #c8d0dc;
+      --accent: #2a303a;
+      --text: #eef2f8;
+      --muted: #a8b0be;
+      --low: #5cbf9a;
+      --medium: #f2b84b;
+      --high: #ec6f6f;
+      --border: #2c323d;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", Tahoma, Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top, #1d2330 0%, var(--bg) 55%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: linear-gradient(135deg, #2b3240, #1a1f29);
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+    }
+
+    .logo svg {
+      width: 20px;
+      height: 20px;
+      opacity: 0.92;
+    }
+
+    .brand-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .brand-title strong {
+      font-size: 0.95rem;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand-title span {
+      font-size: 0.82rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pill {
+      font-size: 0.8rem;
+      color: #dbe3f1;
+      border: 1px solid var(--border);
+      background: rgba(18, 20, 26, 0.35);
+      padding: 8px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      background: linear-gradient(180deg, var(--card) 0%, var(--card-2) 100%);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+      padding: 22px;
+    }
+
+    .hero {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 8px;
+      margin-bottom: 18px;
+    }
+
+    .hero-left {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .hero-right {
+      flex: 0 0 auto;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    h1 {
+      margin: 0;
+      color: #f5f8ff;
+      font-size: clamp(1.3rem, 4vw, 2.2rem);
+      letter-spacing: 0.01em;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-top: 8px;
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 14px;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(18, 20, 26, 0.35);
+      padding: 14px;
+    }
+
+    .dropzone {
+      border: 1px dashed #5b6270;
+      border-radius: 14px;
+      background: var(--accent);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dropzone.dragover {
+      transform: scale(1.01);
+      border-color: #9ca7bb;
+      background: #303744;
+    }
+
+    .dropzone input { display: none; }
+
+    .dz-inner {
+      display: grid;
+      gap: 10px;
+      place-items: center;
+    }
+
+    .dz-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(12, 14, 18, 0.25);
+      display: grid;
+      place-items: center;
+    }
+
+    .dz-icon svg {
+      width: 22px;
+      height: 22px;
+      color: #d4dbea;
+      opacity: 0.95;
+    }
+
+    .dz-title {
+      font-size: 1.02rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .dz-sub {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .dz-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 4px;
+    }
+
+    .btn {
+      border: 1px solid transparent;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #8893a5, #6f7b8f);
+      color: #0f1218;
+    }
+
+    .btn-ghost {
+      background: rgba(0, 0, 0, 0.15);
+      border-color: var(--border);
+      color: #dbe3f1;
+    }
+
+    .preview-wrap {
+      margin-top: 16px;
+      display: none;
+    }
+
+    .preview-wrap img {
+      width: 100%;
+      max-height: 360px;
+      object-fit: contain;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #12151b;
+    }
+
+    .actions {
+      margin-top: 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .analyze-btn {
+      background: linear-gradient(135deg, #8893a5, #6f7b8f);
+      color: #11141a;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .clear-btn {
+      background: rgba(0, 0, 0, 0.18);
+      border: 1px solid var(--border);
+      color: #dbe3f1;
+      flex: 0 0 auto;
+    }
+
+    .analyze-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .loading {
+      margin-top: 14px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 3px solid #4d5665;
+      border-top: 3px solid #d5deea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .result {
+      margin-top: 20px;
+      display: none;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      background: rgba(19, 22, 28, 0.65);
+    }
+
+    .disease-title {
+      margin: 0;
+      font-size: clamp(1.1rem, 3.5vw, 1.7rem);
+      color: #f3f7ff;
+    }
+
+    .meta {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .progress-bar {
+      margin-top: 10px;
+      width: 100%;
+      height: 12px;
+      border-radius: 30px;
+      overflow: hidden;
+      background: #2e3541;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #9aa4b7, #d2dae8);
+      transition: width 0.4s ease;
+    }
+
+    .severity {
+      margin-top: 10px;
+      font-weight: 700;
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 30px;
+      color: #101418;
+    }
+
+    .severity.low { background: var(--low); }
+    .severity.medium { background: var(--medium); }
+    .severity.high { background: var(--high); }
+
+    .section {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .section h3 {
+      margin: 0 0 8px 0;
+      color: #dce3ef;
+      font-size: 1rem;
+    }
+
+    .section p {
+      margin: 0;
+      line-height: 1.55;
+      white-space: pre-line;
+    }
+
+    .helper {
+      display: grid;
+      gap: 10px;
+    }
+
+    .helper h3 {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #dce3ef;
+    }
+
+    .helper ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 0.92rem;
+    }
+
+    .note {
+      border: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 14px;
+      padding: 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .error {
+      margin-top: 12px;
+      color: #ff9393;
+      font-weight: 600;
+      min-height: 1.2rem;
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 12px; }
+      .container { padding: 14px; }
+      .analyze-btn { width: 100%; }
+    }
+
+    @media (max-width: 860px) {
+      .grid { grid-template-columns: 1fr; }
+      .hero { flex-direction: column; }
+      .hero-right { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 2c3.5 2.7 6.8 6.6 6.8 11.2C18.8 18.2 15.9 22 12 22S5.2 18.2 5.2 13.2C5.2 8.6 8.5 4.7 12 2Z" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M12 6c1.8 1.6 3.5 3.9 3.5 6.7 0 3-1.6 5.3-3.5 5.3s-3.5-2.3-3.5-5.3C8.5 9.9 10.2 7.6 12 6Z" stroke="currentColor" stroke-width="1.6" opacity="0.7"/>
+          </svg>
+        </div>
+        <div class="brand-title">
+          <strong>Crop Disease Detector</strong>
+          <span>AI image analysis • Treatment in English + Urdu</span>
+        </div>
+      </div>
+      <div class="pill">Powered by Groq Vision</div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-left">
+        <h1>Diagnose crop issues from a photo.</h1>
+        <p class="subtitle">
+          Upload a clear close-up of the leaf (front and back if possible). The app will estimate the likely disease,
+          confidence, severity, and provide simple treatment steps for farmers.
+        </p>
+      </div>
+    </div>
+
+    <div class="grid">
+      <section class="panel">
+        <label id="dropzone" class="dropzone" aria-label="Upload crop photo">
+          <input id="fileInput" type="file" accept="image/*" />
+          <div class="dz-inner">
+            <div class="dz-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 3v10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M8.5 6.5 12 3l3.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M6 13v5a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3v-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="dz-title">Upload crop photo</div>
+            <div class="dz-sub">Drag & drop here, or choose a file. JPG/PNG recommended.</div>
+            <div class="dz-actions">
+              <button type="button" class="btn btn-primary" id="chooseBtn">Choose photo</button>
+              <button type="button" class="btn btn-ghost" id="sampleTipBtn">Photo tips</button>
+            </div>
+          </div>
+        </label>
+
+        <div id="previewWrap" class="preview-wrap">
+          <img id="previewImage" alt="Crop preview" />
+        </div>
+
+        <div class="actions">
+          <button id="analyzeBtn" class="analyze-btn" disabled>Analyze</button>
+          <button id="clearBtn" class="clear-btn" disabled>Clear</button>
+        </div>
+
+        <div id="loading" class="loading">
+          <div class="spinner"></div>
+          <span>AI analyzing your crop...</span>
+        </div>
+
+        <p id="errorBox" class="error"></p>
+      </section>
+
+      <aside class="panel">
+        <div class="helper">
+          <h3>Best results</h3>
+          <ul>
+            <li>Take photo in daylight, avoid shadows.</li>
+            <li>Focus on the affected area (spots, rust, blight).</li>
+            <li>Keep background simple (one leaf fills most of image).</li>
+            <li>If possible, upload 2 photos: front + back of leaf.</li>
+          </ul>
+          <div class="note" id="tipsNote" style="display:none;">
+            Tip: If the result looks wrong, try a closer photo and include the stem area. Don’t use blurry images.
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <section id="resultCard" class="result">
+      <h2 id="diseaseName" class="disease-title"></h2>
+      <div id="meta" class="meta"></div>
+      <div class="progress-bar"><div id="confidenceFill" class="progress-fill"></div></div>
+      <div id="severityBadge" class="severity low">Low</div>
+
+      <div class="section">
+        <h3>Treatment (English)</h3>
+        <p id="treatmentEnglish"></p>
+      </div>
+
+      <div class="section">
+        <h3>علاج (اردو)</h3>
+        <p id="treatmentUrdu"></p>
+      </div>
+
+      <div class="section">
+        <h3>Pesticide Recommendation</h3>
+        <p id="pesticide"></p>
+      </div>
+
+      <div class="section">
+        <h3>Prevention Tips</h3>
+        <p id="prevention"></p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const dropzone = document.getElementById("dropzone");
+    const fileInput = document.getElementById("fileInput");
+    const previewWrap = document.getElementById("previewWrap");
+    const previewImage = document.getElementById("previewImage");
+    const analyzeBtn = document.getElementById("analyzeBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const chooseBtn = document.getElementById("chooseBtn");
+    const sampleTipBtn = document.getElementById("sampleTipBtn");
+    const tipsNote = document.getElementById("tipsNote");
+    const loading = document.getElementById("loading");
+    const errorBox = document.getElementById("errorBox");
+    const resultCard = document.getElementById("resultCard");
+
+    const diseaseName = document.getElementById("diseaseName");
+    const meta = document.getElementById("meta");
+    const confidenceFill = document.getElementById("confidenceFill");
+    const severityBadge = document.getElementById("severityBadge");
+    const treatmentEnglish = document.getElementById("treatmentEnglish");
+    const treatmentUrdu = document.getElementById("treatmentUrdu");
+    const pesticide = document.getElementById("pesticide");
+    const prevention = document.getElementById("prevention");
+
+    let selectedFile = null;
+
+    function showError(message) {
+      errorBox.textContent = message || "";
+    }
+
+    function setLoading(isLoading) {
+      loading.style.display = isLoading ? "flex" : "none";
+      analyzeBtn.disabled = isLoading || !selectedFile;
+      clearBtn.disabled = isLoading || !selectedFile;
+    }
+
+    function updateSeverity(severity) {
+      const normalized = (severity || "Low").toLowerCase();
+      severityBadge.className = "severity " + normalized;
+      severityBadge.textContent = severity || "Low";
+    }
+
+    function renderResult(data) {
+      diseaseName.textContent = data.disease_name || "Unknown disease";
+      const confidence = Math.max(0, Math.min(100, Number(data.confidence || 0)));
+      meta.textContent = `Confidence: ${confidence.toFixed(1)}% | Diagnosis: ${data.diagnosis_source} | Recommendation: ${data.recommendation_source}`;
+      confidenceFill.style.width = confidence + "%";
+      updateSeverity(data.severity);
+      treatmentEnglish.textContent = data.treatment_english || "No treatment details.";
+      treatmentUrdu.textContent = data.treatment_urdu || "علاج کی تفصیل دستیاب نہیں۔";
+      pesticide.textContent = data.pesticide || "Consult local agri store.";
+      prevention.textContent = data.prevention_tips || "Monitor crop and maintain hygiene.";
+      resultCard.style.display = "block";
+    }
+
+    function setSelectedFile(file) {
+      if (!file) return;
+      selectedFile = file;
+      analyzeBtn.disabled = false;
+      clearBtn.disabled = false;
+      previewImage.src = URL.createObjectURL(file);
+      previewWrap.style.display = "block";
+      showError("");
+      resultCard.style.display = "none";
+    }
+
+    chooseBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      fileInput.click();
+    });
+    dropzone.addEventListener("click", (e) => {
+      if (e.target && (e.target.id === "chooseBtn" || e.target.id === "sampleTipBtn")) return;
+      fileInput.click();
+    });
+    fileInput.addEventListener("change", (e) => setSelectedFile(e.target.files[0]));
+    clearBtn.addEventListener("click", () => {
+      selectedFile = null;
+      fileInput.value = "";
+      previewWrap.style.display = "none";
+      previewImage.removeAttribute("src");
+      analyzeBtn.disabled = true;
+      clearBtn.disabled = true;
+      showError("");
+      resultCard.style.display = "none";
+    });
+    sampleTipBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      tipsNote.style.display = tipsNote.style.display === "none" ? "block" : "none";
+    });
+
+    dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropzone.classList.add("dragover");
+    });
+    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+    dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropzone.classList.remove("dragover");
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        setSelectedFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    analyzeBtn.addEventListener("click", async () => {
+      if (!selectedFile) {
+        showError("Please select a crop image first.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      try {
+        setLoading(true);
+        showError("");
+        const response = await fetch("/analyze", { method: "POST", body: formData });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.detail || "Analysis failed.");
+        }
+        renderResult(data);
+      } catch (err) {
+        showError(err.message || "Could not analyze image.");
+      } finally {
+        setLoading(false);
+      }
+    });
+  </script>
+</body>
+</html>
