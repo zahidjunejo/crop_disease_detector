@@ -1,3 +1,12 @@
+---
+title: Crop Disease Detector
+emoji: 🌿
+colorFrom: green
+colorTo: blue
+sdk: docker
+pinned: false
+---
+
 # AI Crop Disease Detector
 
 An agriculture-focused web app for Pakistani farmers:
