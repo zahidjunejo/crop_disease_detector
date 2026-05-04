@@ -131,7 +131,7 @@ def _json_from_text(raw: str) -> dict[str, Any]:
         return {}
 
 
-def _analyze_with_groq_vision(image_bytes: bytes) -> Optional[dict[str, Any]]:
+def _analyze_with_groq_vision(image_bytes: bytes, mime_type: str = "image/jpeg") -> Optional[dict[str, Any]]:
     client = _groq_client()
     if client is None:
         return None
@@ -153,7 +153,7 @@ def _analyze_with_groq_vision(image_bytes: bytes) -> Optional[dict[str, Any]]:
                         {"type": "text", "text": prompt},
                         {
                             "type": "image_url",
-                            "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"},
+                            "image_url": {"url": f"data:{mime_type};base64,{img_b64}"},
                         },
                     ],
                 }
@@ -208,7 +208,7 @@ async def analyze_crop(file: UploadFile = File(...)) -> AnalysisResponse:
         return _fallback_recommendation("Tomato Late Blight", 30.0)
 
     try:
-        vision_result = _analyze_with_groq_vision(image_bytes)
+        vision_result = _analyze_with_groq_vision(image_bytes, file.content_type or "image/jpeg")
         if vision_result is not None:
             confidence = _safe_float(vision_result.get("confidence", 40.0), 40.0)
             severity = _confidence_to_severity(confidence)
