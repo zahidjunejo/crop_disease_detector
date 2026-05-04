@@ -234,3 +234,8 @@ async def analyze_crop(file: UploadFile = File(...)) -> AnalysisResponse:
     fallback.diagnosis_source = "fallback"
     fallback.recommendation_source = "fallback"
     return fallback
+
+if _name_ == "_main_":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=7860)
+
